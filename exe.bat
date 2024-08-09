@@ -1,0 +1,1 @@
+C:/Users/Usuario/AppData/Local/Programs/Python/Python312/python.exe "c:/Users/Usuario/Desktop/converte_video_txt-GUI/converte video txt- GUI.py"
