@@ -3,8 +3,7 @@ import json
 import wave
 import subprocess
 import threading
-from tkinter import Tk, filedialog, Button, Label, StringVar, Entry, DoubleVar, Scale
-from tkinter import messagebox
+from tkinter import Tk, filedialog, Button, Label, Entry, StringVar, Listbox, Menu, messagebox, DoubleVar
 from tkinter.ttk import Progressbar
 import vosk
 
@@ -53,7 +52,7 @@ def process_videos(video_paths, model_path, output_dir, progress_var):
             f.write('\n'.join(transcript))
 
 def start_processing():
-    video_paths = video_list.get().split("\n")
+    video_paths = video_list.get(0, "end")
     model_path = model_var.get()
     output_dir = output_path.get()
 
@@ -75,7 +74,8 @@ def start_processing():
 def select_videos():
     video_paths = filedialog.askopenfilenames(title="Selecione os vídeos", filetypes=[("Vídeo", "*.mp4")])
     if video_paths:
-        video_list.set("\n".join(video_paths))
+        for path in video_paths:
+            video_list.insert("end", path)
 
 def select_model():
     model_path = filedialog.askdirectory(title="Selecione o diretório do modelo")
@@ -87,9 +87,24 @@ def select_output_dir():
     if output_dir:
         output_path.set(output_dir)
 
+def clear_videos():
+    video_list.delete(0, "end")
+
+def remove_selected_video(event):
+    selected = video_list.curselection()
+    if selected:
+        video_list.delete(selected)
+
+def setup_right_click_menu():
+    menu = Menu(root, tearoff=0)
+    menu.add_command(label="Remover vídeo selecionado", command=lambda: remove_selected_video(None))
+    def show_menu(event):
+        menu.post(event.x_root, event.y_root)
+    video_list.bind("<Button-3>", show_menu)
+
 def main():
     global video_list, model_var, output_path, progress_var, root
-    
+
     root = Tk()
     root.title("Conversor de Vídeo para Texto")
 
@@ -97,8 +112,11 @@ def main():
     Button(root, text="Selecionar vídeos", command=select_videos).pack(pady=5)
     
     # Lista de vídeos selecionados
-    video_list = StringVar()
-    Label(root, textvariable=video_list, justify="left", wraplength=400).pack(pady=5)
+    video_list = Listbox(root, selectmode="multiple", width=50, height=10)
+    video_list.pack(pady=5)
+
+    # Configura menu de clique direito
+    setup_right_click_menu()
 
     # Botão "Selecionar modelo"
     Label(root, text="Selecionar diretório do modelo:").pack(pady=5)
@@ -111,6 +129,9 @@ def main():
     output_path = StringVar()
     Entry(root, textvariable=output_path).pack(pady=5)
     Button(root, text="Selecionar pasta de saída", command=select_output_dir).pack(pady=5)
+
+    # Botão "Limpar Vídeos"
+    Button(root, text="Limpar vídeos selecionados", command=clear_videos).pack(pady=5)
 
     # Barra de progresso
     progress_var = DoubleVar()
