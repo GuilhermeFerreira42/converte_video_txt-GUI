@@ -30,7 +30,7 @@ def save_paths(model_path, output_path):
 
 def convert_audio(video_path, audio_path):
     command = [
-        'ffmpeg', '-i', video_path, '-ar', '16000', '-ac', '1', audio_path
+        'ffmpeg', '-i', video_path, '-ar', '16000', '-ac', '1', '-f', 'wav', '-vn', audio_path
     ]
     subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
@@ -76,7 +76,7 @@ def process_videos(video_paths, model_path, output_dir, progress_var):
 
         os.remove(audio_path)
 
-        output_path = os.path.join(output_dir, video_name.replace('.mp4', '.txt'))
+        output_path = os.path.join(output_dir, video_name.replace(os.path.splitext(video_name)[1], '.txt'))
         with open(output_path, 'w') as f:
             f.write('\n'.join(transcript))
 
@@ -121,7 +121,7 @@ def stop_processing_videos():
 
 def select_videos():
     global video_counter
-    video_paths = filedialog.askopenfilenames(title="Selecione os vídeos", filetypes=[("Vídeo", "*.mp4")])
+    video_paths = filedialog.askopenfilenames(title="Selecione os vídeos", filetypes=[("Todos os arquivos", "*.*")])
     if video_paths:
         for path in video_paths:
             video_list.insert("", "end", values=(video_counter, path, "Não Processado"))
